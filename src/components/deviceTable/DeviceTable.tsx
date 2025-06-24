@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import * as S from './style';
 import { API_BASE_URL } from '@/config';
+import Reset from '@/assets/image/repeate-music.svg';
 
 type Device = {
   id: number;
@@ -74,6 +75,9 @@ const DeviceTable: React.FC = () => {
         return '사용 중';
     }
   };
+  const handleReset = () => {
+    setFilter('전체');
+  };
 
   const calculateDays = (rentalDate: string | null): string => {
     if (!rentalDate) return '- 일';
@@ -94,6 +98,7 @@ const DeviceTable: React.FC = () => {
     <S.Container>
       <S.Title>관리 물품 현황</S.Title>
       <S.ButtonGroup>
+        <S.ResetBtn src={Reset} alt="리셋버튼이미지" onClick={handleReset} />
         {['사용 중', '사용 가능', '사용 불가'].map((status) => (
           <S.Button
             key={status}
@@ -114,7 +119,6 @@ const DeviceTable: React.FC = () => {
             <S.Th>취득 일자</S.Th>
             <S.Th>상태</S.Th>
             <S.Th>사용 기간</S.Th>
-            <S.Th>...</S.Th>
           </tr>
         </thead>
         <tbody>
@@ -126,9 +130,6 @@ const DeviceTable: React.FC = () => {
               <S.Td>{device.registerDate}</S.Td>
               <S.Td>{device.status}</S.Td>
               <S.Td>{device.days}</S.Td>
-              <S.Td>
-                <S.Checkbox type="checkbox" />
-              </S.Td>
             </S.Tr>
           ))}
         </tbody>

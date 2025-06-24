@@ -184,8 +184,7 @@ export const Checkbox = styled.input`
 `;
 export const FilterButtons = styled.div`
   display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 `;
 
 export const FilterButton = styled.button<{
@@ -207,4 +206,8 @@ export const FilterButton = styled.button<{
     `
     outline: 2px solid rgba(0,0,0,0.1);
   `}
+`;
+export const ResetBtn = styled.img`
+  padding: 4px 8px;
+  cursor: pointer;
 `;

@@ -22,16 +22,23 @@ type ItemDetail = {
   status: 'AVAILABLE' | 'UNAVAILABLE' | 'IN_USE';
 };
 
+const formatSerialNumberInput = (input: string) => {
+  const raw = input.replace(/[^\d]/g, '').slice(0, 16);
+  if (raw.length <= 8) return raw;
+  return `${raw.slice(0, 8)}-${raw.slice(8)}`;
+};
+
+const formatDateInput = (input: string) => {
+  const raw = input.replace(/[^\d]/g, '').slice(0, 8);
+  if (raw.length < 5) return raw;
+  if (raw.length < 7) return `${raw.slice(0, 4)}-${raw.slice(4)}`;
+  return `${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}`;
+};
+
 const ItemDetailCard: React.FC<ItemDetailProps> = ({ id }) => {
   const [detail, setDetail] = useState<ItemDetail | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [editedDetail, setEditedDetail] = useState<ItemDetail | null>(null);
-
-  useEffect(() => {
-    if (detail) {
-      setEditedDetail({ ...detail });
-    }
-  }, [detail]);
 
   useEffect(() => {
     axios
@@ -46,6 +53,10 @@ const ItemDetailCard: React.FC<ItemDetailProps> = ({ id }) => {
   }, [id]);
 
   const handleEditClick = () => {
+    if (detail?.status === 'UNAVAILABLE') {
+      alert('사용 불가인 제품은 수정이 불가능합니다.');
+      return;
+    }
     setEditMode(true);
   };
 
@@ -78,43 +89,18 @@ const ItemDetailCard: React.FC<ItemDetailProps> = ({ id }) => {
     setEditedDetail({ ...editedDetail, status: newStatus });
   };
 
-  const handleReturnDateInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, '');
-
-    if (value.length >= 5) {
-      value = `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`;
-    } else if (value.length >= 3) {
-      value = `${value.slice(0, 4)}-${value.slice(4, 6)}`;
-    }
-
-    handleFieldChange('returnDate', value);
-  };
-  const handleRentalDateInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, '');
-
-    if (value.length >= 5) {
-      value = `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`;
-    } else if (value.length >= 3) {
-      value = `${value.slice(0, 4)}-${value.slice(4, 6)}`;
-    }
-
-    handleFieldChange('rentalDate', value);
-  };
-
-  const handleDateInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, '');
-
-    if (value.length >= 5) {
-      value = `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`;
-    } else if (value.length >= 3) {
-      value = `${value.slice(0, 4)}-${value.slice(4, 6)}`;
-    }
-
-    handleFieldChange('acquisitionDate', value);
-  };
+  const handleDateInput =
+    (field: keyof ItemDetail) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const formatted = formatDateInput(e.target.value);
+      handleFieldChange(field, formatted);
+    };
 
   const handleConfirmClick = async () => {
     if (!detail || !editedDetail) return;
+    if (Number(editedDetail.price) === 0) {
+      alert('취득 단가는 0원이 될 수 없습니다.');
+      return;
+    }
 
     const isSame = JSON.stringify(detail) === JSON.stringify(editedDetail);
     if (isSame) {
@@ -143,20 +129,13 @@ const ItemDetailCard: React.FC<ItemDetailProps> = ({ id }) => {
       rentedBy: editedDetail.rentedBy || undefined,
     };
 
-    console.log('🔍 최종 서버로 보낼 데이터:');
-    console.log(JSON.stringify(formattedDetail, null, 2));
-
     try {
       await axios.patch(`${API_BASE_URL}/teacher/item/${id}`, formattedDetail);
       alert('수정되었습니다.');
       setDetail(editedDetail);
       setEditMode(false);
     } catch (err) {
-      if (err instanceof Error) {
-        console.error('❌ 수정 실패:', err.message);
-      } else {
-        console.error('❌ 수정 실패: 알 수 없는 에러', err);
-      }
+      console.error('❌ 수정 실패:', err);
       alert('수정에 실패했습니다.');
     }
   };
@@ -201,21 +180,23 @@ const ItemDetailCard: React.FC<ItemDetailProps> = ({ id }) => {
           {editMode ? (
             <S.Input
               value={editedDetail.serialNumber}
-              onChange={(e) =>
-                handleFieldChange('serialNumber', e.target.value)
-              }
+              onChange={(e) => {
+                const formatted = formatSerialNumberInput(e.target.value);
+                handleFieldChange('serialNumber', formatted);
+              }}
             />
           ) : (
             <span>{detail?.serialNumber}</span>
           )}
         </S.InfoItem>
+
         <S.InfoItem>
           <S.InfoItem2>취득 일자</S.InfoItem2>
           {editMode ? (
             <S.Input
               type="text"
-              value={editedDetail.acquisitionDate?.slice(0, 10) || ''}
-              onChange={handleDateInput}
+              value={editedDetail.acquisitionDate || ''}
+              onChange={handleDateInput('acquisitionDate')}
             />
           ) : (
             <span>
@@ -225,20 +206,23 @@ const ItemDetailCard: React.FC<ItemDetailProps> = ({ id }) => {
             </span>
           )}
         </S.InfoItem>
+
         <S.InfoItem>
           <S.InfoItem2>취득 단가</S.InfoItem2>
           {editMode ? (
             <S.Input
               type="text"
-              value={editedDetail.price}
-              onChange={(e) =>
-                handleFieldChange('price', Number(e.target.value))
-              }
+              value={Number(editedDetail.price).toLocaleString()}
+              onChange={(e) => {
+                const raw = e.target.value.replace(/[^\d]/g, '');
+                handleFieldChange('price', Number(raw));
+              }}
             />
           ) : (
             <span>{Number(editedDetail.price).toLocaleString()} 원</span>
           )}
         </S.InfoItem>
+
         <S.InfoItem>
           <S.InfoItem2>세부 제품명</S.InfoItem2>
           {editMode ? (
@@ -247,9 +231,10 @@ const ItemDetailCard: React.FC<ItemDetailProps> = ({ id }) => {
               onChange={(e) => handleFieldChange('details', e.target.value)}
             />
           ) : (
-            <span>{detail?.details}-</span>
+            <span>{detail?.details || '-'}</span>
           )}
         </S.InfoItem>
+
         <S.InfoItem>
           <S.InfoItem2>위치</S.InfoItem2>
           {editMode ? (
@@ -261,6 +246,7 @@ const ItemDetailCard: React.FC<ItemDetailProps> = ({ id }) => {
             <span>{detail?.place}</span>
           )}
         </S.InfoItem>
+
         <S.InfoItem>
           <S.InfoItem2>사용자</S.InfoItem2>
           {editMode ? (
@@ -272,13 +258,14 @@ const ItemDetailCard: React.FC<ItemDetailProps> = ({ id }) => {
             <span>{detail?.rentedBy || '-'}</span>
           )}
         </S.InfoItem>
+
         <S.InfoItem>
           <S.InfoItem2>대여일</S.InfoItem2>
           {editMode ? (
             <S.Input
               type="text"
-              value={editedDetail.rentalDate?.slice(0, 10) || ''}
-              onChange={handleRentalDateInput}
+              value={editedDetail.rentalDate || ''}
+              onChange={handleDateInput('rentalDate')}
             />
           ) : (
             <span>
@@ -294,8 +281,8 @@ const ItemDetailCard: React.FC<ItemDetailProps> = ({ id }) => {
           {editMode ? (
             <S.Input
               type="text"
-              value={editedDetail.returnDate?.slice(0, 10) || ''}
-              onChange={handleReturnDateInput}
+              value={editedDetail.returnDate || ''}
+              onChange={handleDateInput('returnDate')}
             />
           ) : (
             <span>
@@ -305,6 +292,7 @@ const ItemDetailCard: React.FC<ItemDetailProps> = ({ id }) => {
             </span>
           )}
         </S.InfoItem>
+
         <S.InfoItem>
           <S.InfoItem2>사용 기간</S.InfoItem2>
           <S.Highlight>-</S.Highlight>
@@ -312,16 +300,17 @@ const ItemDetailCard: React.FC<ItemDetailProps> = ({ id }) => {
         </S.InfoItem>
       </S.InfoList>
 
-      {editMode && (
-        <S.ConfirmButton onClick={handleConfirmClick}>확인</S.ConfirmButton>
-      )}
-
-      <S.Bottom>
+      <S.Block>
         <S.BlockButton onClick={() => handleStatusChange('UNAVAILABLE')}>
           사용 불가 처리하기
         </S.BlockButton>
-        <S.Caution>* 되돌릴 수 없는 이벤트입니다.</S.Caution>
-      </S.Bottom>
+      </S.Block>
+
+      <S.Caution>* 되돌릴 수 없는 이벤트입니다.</S.Caution>
+
+      {editMode && (
+        <S.ConfirmButton onClick={handleConfirmClick}>확인</S.ConfirmButton>
+      )}
     </S.Card>
   );
 };

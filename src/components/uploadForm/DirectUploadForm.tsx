@@ -5,18 +5,54 @@ import * as S from './style';
 import { API_BASE_URL } from '@/config';
 
 const DirectUploadForm: React.FC = () => {
+  const getToday = () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
   const [formData, setFormData] = useState({
     item: '',
     serialNumber: '',
-    acquisitionDate: '',
+    acquisitionDate: getToday(),
     price: '',
     details: '',
     place: '',
   });
+
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
+    if (name === 'serialNumber') {
+      const raw = value.replace(/[^\d]/g, '');
+      let formatted = raw;
+      if (raw.length > 8) {
+        formatted = `${raw.slice(0, 8)}-${raw.slice(8, 16)}`;
+      }
+      setFormData((prev) => ({ ...prev, serialNumber: formatted }));
+      return;
+    }
+
+    if (name === 'acquisitionDate') {
+      const raw = value.replace(/[^\d]/g, '').slice(0, 8);
+      let formatted = raw;
+      if (raw.length > 4 && raw.length <= 6) {
+        formatted = `${raw.slice(0, 4)}-${raw.slice(4)}`;
+      } else if (raw.length > 6) {
+        formatted = `${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6)}`;
+      }
+      setFormData((prev) => ({ ...prev, acquisitionDate: formatted }));
+      return;
+    }
+    if (name === 'price') {
+      const digits = value.replace(/[^\d]/g, '');
+      setFormData((prev) => ({ ...prev, price: digits }));
+      return;
+    }
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -89,21 +125,21 @@ const DirectUploadForm: React.FC = () => {
             label="분류 번호"
             name="serialNumber"
             value={formData.serialNumber}
-            placeholder="43211503-21191751"
+            placeholder="xxxxxxxx-xxxxxxxx"
             onChange={handleChange}
           />
           <Field
             label="취득 일자"
             name="acquisitionDate"
             value={formData.acquisitionDate}
-            placeholder="2025-04-02"
+            placeholder="yyyy-mm-dd"
             onChange={handleChange}
           />
           <Field
             label="취득 단가"
             name="price"
             value={formData.price}
-            placeholder="2221608"
+            placeholder="xxx,xxx"
             onChange={handleChange}
           />
           <Field
@@ -141,16 +177,21 @@ const Field: React.FC<FieldProps> = ({
   value,
   placeholder,
   onChange,
-}) => (
-  <S.FieldWrapper>
-    <S.FieldLabel>{label}</S.FieldLabel>
-    <S.FieldInput
-      name={name}
-      value={value}
-      placeholder={placeholder}
-      onChange={onChange}
-    />
-  </S.FieldWrapper>
-);
+}) => {
+  const displayValue =
+    name === 'price' && value ? Number(value).toLocaleString() : value;
+
+  return (
+    <S.FieldWrapper>
+      <S.FieldLabel>{label}</S.FieldLabel>
+      <S.FieldInput
+        name={name}
+        value={displayValue}
+        placeholder={placeholder}
+        onChange={onChange}
+      />
+    </S.FieldWrapper>
+  );
+};
 
 export default DirectUploadForm;

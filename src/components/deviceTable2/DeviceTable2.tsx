@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import * as S from './style';
 import { API_BASE_URL } from '@/config';
+import Reset from '@/assets/image/repeate-music.svg';
 
 type Device = {
   id: number;
@@ -55,6 +56,7 @@ const DeviceTable2: React.FC<DeviceTable2Props> = ({ onSelectItem }) => {
             new Date(b.acquisitionDate).getTime() -
             new Date(a.acquisitionDate).getTime(),
         );
+
         const fetched = sorted.map(
           (item: DeviceApiResponse): Device => ({
             id: item.id,
@@ -67,7 +69,14 @@ const DeviceTable2: React.FC<DeviceTable2Props> = ({ onSelectItem }) => {
             place: item.place,
           }),
         );
+
         setDevices(fetched);
+
+        if (fetched.length > 0) {
+          const latestId = fetched[0].id;
+          setSelectedId(latestId);
+          onSelectItem(latestId);
+        }
       })
       .catch((err) => {
         console.error('서버 요청 실패:', err);
@@ -88,7 +97,9 @@ const DeviceTable2: React.FC<DeviceTable2Props> = ({ onSelectItem }) => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-
+  const handleReset = () => {
+    setFilter('전체');
+  };
   const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setPageSize(Number(e.target.value));
     setCurrentPage(1);
@@ -154,6 +165,7 @@ const DeviceTable2: React.FC<DeviceTable2Props> = ({ onSelectItem }) => {
     <S.Container>
       <S.Title>물품 리스트</S.Title>
       <S.FilterButtons>
+        <S.ResetBtn src={Reset} alt="리셋버튼이미지" onClick={handleReset} />
         <S.StyledFilterButton
           $bgColor="#FFEFF2"
           $textColor="#F6556C"

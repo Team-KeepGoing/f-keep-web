@@ -22,10 +22,10 @@ export const Title = styled.h2`
 
 export const ButtonGroup = styled.div`
   display: flex;
-  gap: 8px;
-  width: 300px;
+  gap: 4px;
+  width: 340px;
   margin-bottom: 20px;
-  margin-left: 918px;
+  margin-left: 900px;
 `;
 
 export const Button = styled.button<{ active: boolean }>`
@@ -79,4 +79,9 @@ export const Tr = styled.tr`
 export const Checkbox = styled.input`
   width: 16px;
   height: 16px;
+`;
+
+export const ResetBtn = styled.img`
+  padding: 4px 8px;
+  cursor: pointer;
 `;

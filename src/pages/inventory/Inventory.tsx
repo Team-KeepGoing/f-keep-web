@@ -6,6 +6,7 @@ import ItemDetailCard from '@/components/itemDetailCard/ItemDetailCard';
 
 const Inventory = () => {
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+  // const [selectedItemId, setSelectedItemId] = useState<number>(1);
 
   return (
     <S.page_container>
