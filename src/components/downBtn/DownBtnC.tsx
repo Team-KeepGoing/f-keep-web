@@ -6,16 +6,68 @@ const DownBtnC = () => {
   const [loading, setLoading] = useState(false);
 
   const handleTemplateDownload = async () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
     setLoading(true);
     try {
-      window.location.href = `${API_BASE_URL}/teacher/item/template`;
+      const res = await fetch(`${API_BASE_URL}/teacher/item/template`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '템플릿.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert('파일 다운로드 중 오류 발생');
+      console.error(error);
     } finally {
-      setTimeout(() => setLoading(false), 1000);
+      setLoading(false);
     }
   };
 
-  const handleExportDownload = () => {
-    window.location.href = `${API_BASE_URL}/teacher/item/export`;
+  const handleExportDownload = async () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/teacher/item/export`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '현재_테이블.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert('파일 다운로드 중 오류 발생');
+      console.error(error);
+    }
   };
 
   return (

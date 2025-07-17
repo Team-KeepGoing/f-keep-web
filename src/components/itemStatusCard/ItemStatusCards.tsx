@@ -46,8 +46,13 @@ const ItemStatusCards = () => {
   });
 
   useEffect(() => {
+    const token = localStorage.getItem('accessToken');
     axios
-      .get(`${API_BASE_URL}/teacher/item/count`)
+      .get(`${API_BASE_URL}/teacher/item/count`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       .then((res) => {
         setData(res.data.data);
       })

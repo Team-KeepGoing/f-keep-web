@@ -45,9 +45,14 @@ const ExcelUpload = () => {
     const formData = new FormData();
     formData.append('excel', file);
 
+    const token = localStorage.getItem('accessToken');
+
     try {
       const res = await fetch(`${API_BASE_URL}/teacher/item/validate`, {
         method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formData,
       });
 
@@ -83,10 +88,15 @@ const ExcelUpload = () => {
     const formData = new FormData();
     formData.append('excel', file);
 
+    const token = localStorage.getItem('accessToken');
+
     try {
       setUploading(true);
-      const res = await fetch(`{API_BASE_URL}/teacher/item/import`, {
+      const res = await fetch(`${API_BASE_URL}/teacher/item/import`, {
         method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formData,
       });
 

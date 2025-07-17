@@ -89,6 +89,7 @@ const DirectUploadForm: React.FC = () => {
     }
 
     try {
+      const token = localStorage.getItem('accessToken'); // 🔒 토큰 가져오기
       const payload = {
         item,
         serialNumber,
@@ -98,7 +99,12 @@ const DirectUploadForm: React.FC = () => {
         place,
       };
 
-      await axios.post(`${API_BASE_URL}/teather/item`, payload);
+      await axios.post(`${API_BASE_URL}/teacher/item`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       alert('물품이 성공적으로 등록되었습니다.');
       navigate('/tools_list');
     } catch (error) {

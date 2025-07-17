@@ -48,8 +48,18 @@ const DeviceTable2: React.FC<DeviceTable2Props> = ({ onSelectItem }) => {
   }, []);
 
   const fetchDevices = () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
     axios
-      .get(`${API_BASE_URL}/teacher/item/list`)
+      .get(`${API_BASE_URL}/teacher/item/list`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       .then((res) => {
         const sorted = res.data.data.sort(
           (a: DeviceApiResponse, b: DeviceApiResponse) =>

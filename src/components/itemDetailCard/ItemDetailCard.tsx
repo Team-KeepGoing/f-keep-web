@@ -41,8 +41,13 @@ const ItemDetailCard: React.FC<ItemDetailProps> = ({ id }) => {
   const [editedDetail, setEditedDetail] = useState<ItemDetail | null>(null);
 
   useEffect(() => {
+    const token = localStorage.getItem('accessToken');
     axios
-      .get(`${API_BASE_URL}/teacher/item/${id}`)
+      .get(`${API_BASE_URL}/teacher/item/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       .then((res) => {
         setDetail(res.data.data);
         setEditedDetail(res.data.data);
@@ -130,7 +135,12 @@ const ItemDetailCard: React.FC<ItemDetailProps> = ({ id }) => {
     };
 
     try {
-      await axios.patch(`${API_BASE_URL}/teacher/item/${id}`, formattedDetail);
+      const token = localStorage.getItem('accessToken');
+      await axios.patch(`${API_BASE_URL}/teacher/item/${id}`, formattedDetail, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       alert('수정되었습니다.');
       setDetail(editedDetail);
       setEditMode(false);

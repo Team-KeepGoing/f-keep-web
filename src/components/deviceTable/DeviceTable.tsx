@@ -34,8 +34,18 @@ const DeviceTable: React.FC = () => {
   >('전체');
 
   useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
     axios
-      .get(`${API_BASE_URL}/teacher/item/list`)
+      .get(`${API_BASE_URL}/teacher/item/list`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       .then((res) => {
         const items = res.data?.data ?? [];
 
