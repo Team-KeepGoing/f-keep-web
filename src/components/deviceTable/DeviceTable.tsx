@@ -37,7 +37,9 @@ const DeviceTable: React.FC = () => {
     axios
       .get(`${API_BASE_URL}/teacher/item/list`)
       .then((res) => {
-        const sorted = res.data.data
+        const items = res.data?.data ?? [];
+
+        const sorted = items
           .sort(
             (a: DeviceApiResponse, b: DeviceApiResponse) =>
               new Date(b.acquisitionDate).getTime() -
