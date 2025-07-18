@@ -13,16 +13,22 @@ const LoginCont = () => {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${API_BASE_URL}/user/signin`, {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/user/signin`,
+        {
+          email,
+          password,
+        },
+        {
+          responseType: 'json',
+        },
+      );
 
       if (response.status === 200) {
-        const { accessToken, refreshToken } = response.data;
+        const { token } = response.data;
+        console.log(response.data);
 
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('accessToken', token);
 
         navigate('/main');
       } else {
